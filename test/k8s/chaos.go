@@ -217,7 +217,9 @@ var _ = SkipDescribeIf(helpers.RunsOn54Kernel, "K8sChaosTest", func() {
 			Expect(err).To(BeNil(), "Endpoints are not ready after timeout")
 		}
 
-		It("TCP connection is not dropped when cilium restarts", func() {
+		// There's currently a regression in net-next that restarts the kernel
+		// when this test is executed.
+		SkipItIf(helpers.RunsOnNetNextKernel, "TCP connection is not dropped when cilium restarts", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 			res := kubectl.ExecPodCmdBackground(
@@ -233,7 +235,9 @@ var _ = SkipDescribeIf(helpers.RunsOn54Kernel, "K8sChaosTest", func() {
 			res.ExpectSuccess("Failed while cilium was restarting")
 		})
 
-		It("L3/L4 policies still work while Cilium is restarted", func() {
+		// There's currently a regression in net-next that restarts the kernel
+		// when this test is executed.
+		SkipItIf(helpers.RunsOnNetNextKernel, "L3/L4 policies still work while Cilium is restarted", func() {
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
