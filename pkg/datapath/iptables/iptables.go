@@ -203,6 +203,7 @@ func (m *IptablesManager) removeCiliumRules(table string, prog iptablesInterface
 	}
 
 	scanner := bufio.NewScanner(bytes.NewReader(out))
+nextRule:
 	for scanner.Scan() {
 		rule := scanner.Text()
 		log.WithField(logfields.Object, logfields.Repr(rule)).Debugf("Considering removing %s rule", prog)
@@ -215,16 +216,11 @@ func (m *IptablesManager) removeCiliumRules(table string, prog iptablesInterface
 			// do not remove feeder for chains that are set to be disabled
 			// ie catch the beginning of the rule like -A POSTROUTING to match it against
 			// disabled chains
-			skipFeeder := false
 			for _, disabledChain := range option.Config.DisableIptablesFeederRules {
 				if strings.Contains(rule, " "+strings.ToUpper(disabledChain)+" ") {
 					log.WithField("chain", disabledChain).Info("Skipping the removal of feeder chain")
-					skipFeeder = true
-					break
+					continue nextRule
 				}
-			}
-			if skipFeeder {
-				continue
 			}
 
 			reversedRule, err := reverseRule(rule)
